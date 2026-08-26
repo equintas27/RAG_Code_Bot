@@ -1,0 +1,76 @@
+rag-codebot/
+├── data/
+│   ├── index/                 # Ficheiros dos índices gerados (BM25, vetores FAISS/NumPy, JSONs)
+│   └── evaluation/            # Datasets de teste (.json) para o cálculo do Recall@K
+│
+├── src/
+│   └── codebot/               # Nome do seu pacote Python unificado
+│       ├── __init__.py
+│       ├── __main__.py        # Permite executar a app via: python -m codebot
+│       │
+│       ├── core/              # --- MOTOR RAG (Base de Dados e Recuperação) ---
+│       │   ├── __init__.py
+│       │   ├── chunking/      # AST Parser para Python (.py) e splitter para Markdown
+│       │   │   ├── __init__.py
+│       │   │   ├── ast_parser.py
+│       │   │   └── text_splitter.py
+│       │   ├── indexing/      # Leitura do repositório e armazenamento do índice
+│       │   │   ├── __init__.py
+│       │   │   ├── ingest.py
+│       │   │   └── store.py
+│       │   ├── retrieval/     # Algoritmos de busca léxica, vetorial e fusão
+│       │   │   ├── __init__.py
+│       │   │   ├── bm25.py
+│       │   │   ├── dense.py
+│       │   │   └── fusion.py   # Algoritmo RRF (Reciprocal Rank Fusion)
+│       │   └── evaluation/    # Métricas de avaliação (Recall@K com offsets)
+│       │       ├── __init__.py
+│       │       └── metrics.py
+│       │
+│       ├── chat/              # --- CAMADA DO CHATBOT ---
+│       │   ├── __init__.py
+│       │   ├── memory.py      # Gestão do histórico de conversação (Buffer de mensagens)
+│       │   ├── engine.py      # Orquestrador: recebe a pergunta -> busca no RAG -> envia ao LLM
+│       │   ├── generator.py   # Carregamento do LLM (ex: Ollama, Hugging Face local)
+│       │   └── prompts.py     # System Prompts que unificam Histórico + Contexto + Pergunta
+│       │
+│       └── interfaces/        # --- FRONTS DE INTERAÇÃO ---
+│           ├── __init__.py
+│           ├── cli.py         # Interface CLI (comandos 'index', 'evaluate' e 'chat')
+│           └── web.py         # Interface Web interativa (Streamlit)
+│
+├── tests/                     # Testes unitários com pytest
+│   ├── test_ast_parser.py
+│   ├── test_bm25.py
+│   └── test_memory.py
+│
+├── .gitignore
+├── pyproject.toml             # Ficheiro de configuração do pacote Python e dependências
+└── README.md
+
+
+✅ Ambiente Python
+      ↓
+✅ Package instalado
+      ↓
+⬅️ ESTAMOS AQUI
+      ↓
+Document / Chunk
+      ↓
+Ingestion
+      ↓
+AST Parser
+      ↓
+BM25
+      ↓
+Dense Retrieval
+      ↓
+RRF
+      ↓
+Evaluation
+      ↓
+Memory
+      ↓
+LLM
+      ↓
+CLI / Web

@@ -1,0 +1,272 @@
+Parte obrigatória
+Irá construir um sistema de Geração Aumentada por Recuperação que responde a perguntas
+sobre uma base de código. Irá ingerir o repositório vLLM fornecido num índice pesquisável,
+recuperar os excertos mais relevantes para uma questão, gerar uma resposta a partir dos mesmos com
+Qwen/Qwen3-0.6B e medir a qualidade da recuperação com o recall@k. O seu sistema será avaliado com base em
+se recupera as localizações de origem corretas e produz respostas fundamentadas nas mesmas.
+
+VI.1 Indexando a base de código
+Tudo começa com o índice. Leia os ficheiros que considere úteis do repositório vLLM fornecido em anexo, divida cada um em partes e persista um índice que
+a recuperação possa consultar em milissegundos. A indexação de todo o corpus deve demorar no máximo 5
+minutos.
+
+Um ficheiro Python e uma página Markdown não são divididos da mesma forma, pelo que o seu programa
+deve implementar duas estratégias distintas de fragmentação:
+• Fragmentação de código Python,
+• Fragmentação de Markdown/texto.
+Para a recuperação propriamente dita, implemente pelo menos um dos dois métodos lexicais clássicos. A escolha é sua:
+• TF-IDF,
+• BM25.
+
+Pode explorar outros métodos, desde que um destes dois seja implementado.
+
+OBS.:
+O tamanho do bloco é configurável através de um argumento da linha de comandos (--max_chunk_size),
+com um valor padrão de 2000 caracteres. Não ultrapasse este limite: o
+moulinette rejeita qualquer tipo de letra recuperado com mais de 2000 caracteres
+(o seu max_context_length), e uma única fonte excessivamente longa invalida
+toda a sua saída. Blocos mais pequenos são aceitáveis; relate o efeito no seu
+recall@k.
+
+Indexação de um corpus alvo: o indexador divide cada ficheiro em blocos e persiste o índice em
+dados/processado/.
+
+As perguntas e o código-fonte raramente usam as mesmas palavras: uma pergunta pode
+parafrasear uma ideia ou citar um identificador literalmente. O que mantém no momento da indexação determina qual dos dois ainda pode ser correspondido.
+
+VI.2 Recuperação
+Com o índice criado, pode pesquisá-lo. Dada uma questão, o seu sistema devolve os
+k excertos mais relevantes. Cada resultado é uma localização de origem: um caminho de ficheiro e o
+intervalo de caracteres (índice do primeiro caractere, índice do último caractere) que abrange, com um máximo
+2000 caracteres de largura.
+
+O caminho do ficheiro deve corresponder exatamente ao caminho do corpus (por ex.
+data/raw/vllm-0.10.1/docs/features/lora.md). O avaliador compara
+os caminhos literalmente, pelo que um caminho com um prefixo diferente nunca corresponde.
+
+A recuperação deve funcionar para uma única consulta e em lote em todo o conjunto de dados de perguntas lidas
+de JSON. Nos conjuntos de dados de referência, o seu sistema deve atingir pelo menos 80% de recall@5 em
+questões de documentação e 50% em questões de código (a métrica está definida no capítulo Avaliação).
+
+Uma pesquisa com uma única consulta devolve locais de origem classificados, cada um com o seu caminho de ficheiro e extensão de caracteres.
+
+VI.3 Geração de respostas
+
+Com os excertos corretos recuperados, o sistema gera uma resposta em linguagem natural utilizando
+Qwen/Qwen3-0,6B. Passe o contexto recuperado para o modelo dentro do seu orçamento de tokens e
+produzir JSON estruturado seguindo os modelos pydantic fornecidos.
+
+Uma resposta satisfatória é:
+• Coerente e compreensível,
+• Fundamentada nas fontes recuperadas, sem grandes distorções,
+• Direta: responde à questão colocada.
+
+I:
+O modelo obrigatório Qwen/Qwen3-0.6B tem limitações de raciocínio conhecidas.
+Estes critérios descrevem o objetivo que uma resposta deve procurar, não
+uma linha rígida de aprovação/reprovação: a avaliação prioriza a qualidade da recuperação,
+o embasamento e a estratégia de enunciado em vez da formulação final perfeita. Uma resposta válida
+é coerente e em grande parte fundamentada nos documentos recuperados,
+ainda que parcialmente incompleta devido às limitações do modelo base.
+
+VI.4 Modelos de Dados
+
+Implemente os seguintes modelos pydantic; validam os dados trocados entre os
+estágios. O modelo MinimalSource representa uma única fonte de informação:
+class MinimalSource(BaseModel):
+file_path: str
+first_character_index: int
+last_character_index: int
+
+Os modelos UnansweredQuestion e AnsweredQuestion representam uma questão sem resposta
+e uma questão respondida:
+Modelos UnansweredQuestion e AnsweredQuestion
+
+class UnansweredQuestion(BaseModel):
+question_id: str = Field(default_factory=lambda:
+str(uuid.uuid4()))
+question: str
+class AnsweredQuestion(UnansweredQuestion):
+sources: List[MinimalSource]
+resposta: str
+O modelo RagDataset representa um conjunto de dados de questões RAG:
+Modelo RagDataset
+class RagDataset(BaseModel):
+rag_questions: List[AnsweredQuestion | [Pergunta sem resposta]
+Os modelos MinimalSearchResults e MinimalAnswer representam os resultados da pesquisa
+e uma resposta:
+Modelos MinimalSearchResults e MinimalAnswer
+class MinimalSearchResults(ModeloBase):
+question_id: str
+question: str
+fontes_de_recuperação: List[MinimalSource]
+class MinimalAnswer(MinimalSearchResults):
+resposta: str
+Os modelos StudentSearchResults e StudentSearchResultsAndAnswer representam os resultados da pesquisa e os resultados da pesquisa com respostas:
+Modelos StudentSearchResults e StudentSearchResultsAndAnswer
+class ResultadosPesquisaEstudante(ModeloBase):
+search_results: List[MinimalSearchResults]
+k: int
+class ResultadosPesquisaDeEstudantesEResposta(BaseModel):
+search_results: List[MinimalAnswer]
+k: int
+
+Os modelos fornecidos são uma base. Pode expandi-los adicionando novos modelos
+ou campos extra (por exemplo, no modelo de resultados de pesquisa) se a sua implementação assim o exigir.
+Isso.
+
+VI.5 Saída
+
+Cada comando gera um ficheiro JSON que está em conformidade com os modelos pydantic fornecidos:
+• Para operações de pesquisa: Utilize o modelo StudentSearchResults com:
+◦ search_results: Lista de MinimalSearchResults contendo question_id, question e retrieved_sources
+◦ k: Número de resultados solicitados
+• Para geração de respostas: Utilize o modelo StudentSearchResultsAndAnswer com:
+◦ search_results: Lista de MinimalAnswer contendo question_id, question,
+fontes_de_recuperação e resposta
+◦ k: Número de resultados solicitados
+• Informação da fonte: Cada MinimalSource contém:
+◦ file_path: caminho para o ficheiro de origem, relativo à raiz do seu projeto e escrito exatamente como no corpus ingerido (por exemplo, data/raw/vllm-0.10.1/...); É
+comparado literalmente com a referência
+◦ first_character_index: Posição do primeiro caractere
+◦ last_character_index: Posição do último caractere
+
+Formato de Saída
+A saída deve respeitar a base mínima dos modelos fornecidos, mas pode ser melhorada
+da seguinte forma:
+Exemplo: Saída ResultadosEstudantesEstudantes
+
+"resultados_pesquisas": [
+{
+"question_id": "q1",
+"question": "Como configurar o servidor OpenAI?",
+"retrieved_sources": [
+{
+"file_path": "data/raw/vllm-0.10.1/docs/serving/openai_compatible_server.md",
+"first_character_index": 9867,
+"last_character_index": 10100
+},
+{
+"file_path": "data/raw/vllm-0.10.1/vllm/entrypoints/openai/api_server.py",
+"first_character_index": 267,
+"last_character_index": 400
+}
+]
+}
+],
+"k": 10
+Para as respostas, a saída deve seguir o modelo StudentSearchResultsAndAnswer:
+Exemplo: Saída StudentSearchResultsAndAnswer
+"resultados_pesquisas": [
+{
+"question_id": "q1",
+"question": "Como configurar o servidor OpenAI?",
+"retrieved_sources": [
+{
+"file_path": "data/raw/vllm-0.10.1/docs/serving/openai_compatible_server.md",
+"first_character_index": 9867,
+"last_character_index": 10100
+},
+{
+"file_path": "data/raw/vllm-0.10.1/vllm/entrypoints/openai/api_server.py",
+"first_character_index": 267,
+"last_character_index": 400
+}
+],
+"resposta": "Para configurar o servidor compatível com OpenAI no vLLM..."
+}
+],
+"k": 10
+
+
+VI.6 Interface de Linha de Comandos
+
+Forneça uma CLI construída com o Python Fire. Cada comando é invocado como `uv run python`
+
+`-m src <comando> [opções]`. Os seguintes comandos são obrigatórios (as opções apresentadas
+são o mínimo; pode adicionar as suas próprias):
+
+• index –max_chunk_size <int>
+Ingerir dados em `data/raw/` e construir o índice em `data/processed/`.
+
+• search <consulta> –k <int>
+Devolver as k principais fontes para uma única consulta.
+
+• search_dataset –dataset_path <caminho> –k <int> –save_directory <directoria>
+Executar pesquisa em todo o conjunto de dados e escrever um ficheiro JSON `StudentSearchResults`.
+
+• answer <consulta> –k <int>
+Responder a uma única consulta utilizando o contexto recuperado.
+
+• answer_dataset –student_search_results_path <caminho> –save_directory <diretório>
+Gera respostas para um conjunto de dados, produzindo um ficheiro JSON StudentSearchResultsAndAnswer.
+
+• evaluate –student_search_results_path <caminho> –dataset_path <caminho>
+Reporta o seu próprio recall@k em relação a um conjunto de dados de referência, para os seus próprios testes.
+
+Todos os caminhos de entrada e saída devem ser argumentos CLI configuráveis ​​e nunca codificados diretamente no código.
+
+Inclua barras de progresso (tqdm) para operações de longa duração e lide com entradas degeneradas
+(consulta vazia, consulta sem sentido, k=0, ficheiros em falta, JSON malformado) de forma adequada.
+A CLI é testada com estes casos extremos e nunca deve falhar com um traceback não tratado.
+
+OBS.:
+
+O comando evaluate é para a sua própria iteração. O recall@k oficial utilizado durante a defesa é calculado pelo executável moulinette fornecido, e não pelo seu código. A sua solução nunca deve
+importar ou chamar o moulinette.
+
+VI.7 Visão geral completa
+
+Esta secção mostra o fluxo de trabalho completo, desde os documentos em bruto até à avaliação e geração de respostas,
+exatamente como os scripts de exame de referência o executam.
+
+VI.7.1 Layout esperado do projeto para avaliação
+
+Durante a defesa, o pipeline de recuperação é executado de ponta a ponta como um único fluxo automatizado
+(index → ​​​​search_dataset → moulinette evaluate_student_search_results) using
+os guiões de exame de referência. Os comandos individuais continuam disponíveis para depuração, mas
+para tornar a execução automatizada reproduzível sem reestruturação manual, o seu repositório
+deve respeitar o seguinte layout e convenções:
+
+• src/: o seu módulo Python, executável como uv run python -m src <comando>.
+
+• pyproject.toml e uv.lock na raiz do repositório, para que o uv sync funcione a partir da
+raiz.
+
+• README.md na raiz do repositório.
+• data/raw/: as fontes indexadas (o repositório vLLM fornecido).
+• data/processed/: o índice produzido pelo comando index.
+
+• data/datasets/UnansweredQuestions/ e data/datasets/AnsweredQuestions/:
+os conjuntos de dados de perguntas.
+
+• data/output/search_results/<DatasetScope>/: a saída de search_dataset,
+definida pelo âmbito do conjunto de dados.
+
+• data/output/search_results_and_answer/<DatasetScope>/: a saída de answer_dataset,
+definida pelo âmbito do conjunto de dados.
+
+Todos os caminhos de entrada e saída (--dataset_path, --save_directory, --student_search_results_path)
+devem ser argumentos configuráveis ​​da CLI e nunca devem ser codificados: o avaliador encaminha-os
+para os conjuntos de dados e para os diretórios de saída dedicados. Se a estrutura ou a interface de comando não forem respeitadas, os scripts de referência não poderão ser executados e as verificações correspondentes serão consideradas falhas por projeto.
+
+VI.7.2 Executar o pipeline completo
+
+O pipeline é conduzido por quatro comandos, por esta ordem: indexar o corpus, pesquisar um conjunto de dados completo, pontuar os resultados com o Moulinette e, em seguida, gerar respostas. Os comandos de pesquisa e resposta de consulta única mostrados anteriormente comportam-se da mesma forma numa pergunta de cada vez.
+
+1.º Indexar o corpus uma vez:
+uv run python -m src index --max_chunk_size 2000
+Ingestão concluída! Índices guardados em data/processed/
+2.º Pesquisar um conjunto de dados. Especifique sempre --save_directory pelo conjunto de dados (UnansweredQuestions ou AnsweredQuestions): os conjuntos de dados públicos partilham os nomes dos ficheiros, pelo que a gravação de cada execução na mesma pasta sobrescreveria os resultados anteriores.
+uv run python -m src search_dataset
+--dataset_path data/datasets/UnansweredQuestions/dataset_docs_public.json
+--k 10
+--save_directory data/output/search_results/UnansweredQuestions
+Guardado student_search_results em data/output/search_results/UnansweredQuestions/dataset_docs_public.json
+3.º Pontue com o moulinette (renomeie moulinette-ubuntu/-fedora para moulinette
+primeiro). Os resultados dos alunos vêm em primeiro lugar, seguidos pelo conjunto de dados de perguntas respondidas (Ground Truth AnsweredQuestions).
+Em seguida:
+./moulinette evaluate_student_search_results
+data/output/search_results/UnansweredQuestions/dataset_docs_public.json
+data/datasets/AnsweredQuestions/dataset_docs_public.json
+--k 10 --max_context_length 2000
