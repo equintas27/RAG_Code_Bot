@@ -49,6 +49,25 @@ rag-codebot/
 └── README.md
 
 
+
+                    DOCUMENTO
+                       │
+          ┌────────────┼────────────┐
+          ↓            ↓            ↓
+        Texto       Tabelas      Imagens
+          │            │            │
+          ↓            ↓            ↓
+       Parser       Parser       OCR/Vision
+          │            │            │
+          └────────────┼────────────┘
+                       ↓
+                  Conhecimento
+                       ↓
+                      RAG
+                       ↓
+                      LLM
+
+
 ✅ Ambiente Python
       ↓
 ✅ Package instalado
