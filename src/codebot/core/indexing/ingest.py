@@ -15,6 +15,10 @@ def extract_pdf(pdf_path) ->str:
 if __name__ == "__main__":
     path = "data/documents/sonangol/Relatorio-2025.pdf"
     text_1 = extract_pdf(path)
-    txt = text_splitter(text_1, 1000, 200)
-    print ("\n --- Páginas --- \n")
-    print(txt[0])
+    #paragraphs = text_1.split("\n")
+    txt = text_splitter(text_1, 50, 20)
+    print(txt)
+    #print ("\n --- Páginas --- \n")
+    #print(paragraphs[:15])
+    #print(text_1.count("\n"))
+    #print(text_1.count("\n\n"))
