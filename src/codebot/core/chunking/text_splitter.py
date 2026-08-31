@@ -3,7 +3,6 @@ def text_splitter(text, chunk_size, overlap) -> list[str]:
     chunks = []
     lines = text.split("\n")
     current_chunks = ""
-    start = 0
 
     if chunk_size <= 0 or overlap <= 0:
         raise ValueError("chunk_size and overlap must be biggest than 0")
@@ -12,9 +11,11 @@ def text_splitter(text, chunk_size, overlap) -> list[str]:
     for line in lines:
         if len(current_chunks) + len(line) + 1 > chunk_size:
             if current_chunks:
-                current_chunks = current_chunks[-overlap]
+                cut_position = current_chunks.rfind(" ")
+                chunk = current_chunks[:cut_position]
                 chunks.append(current_chunks)
-            current_chunks = ""
+                current_chunks = current_chunks[-overlap:]
+            #current_chunks = ""
         current_chunks += line + "\n"
         
     if current_chunks:

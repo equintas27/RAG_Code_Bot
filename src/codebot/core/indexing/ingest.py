@@ -13,12 +13,22 @@ def extract_pdf(pdf_path) ->str:
 
 
 if __name__ == "__main__":
-    path = "data/documents/sonangol/Relatorio-2025.pdf"
-    text_1 = extract_pdf(path)
+    #path = "data/documents/sonangol/Relatorio-2025.pdf"
+    #text_1 = extract_pdf(path)
     #paragraphs = text_1.split("\n")
-    txt = text_splitter(text_1, 50, 20)
-    print(txt)
+    #chunks = text_splitter(text_1, 1000, 50)
+
+    #for chunk in chunks:
+        #print("--CHUNCK--")
+        #print(chunk)
     #print ("\n --- Páginas --- \n")
     #print(paragraphs[:15])
     #print(text_1.count("\n"))
     #print(text_1.count("\n\n"))
+    text = "Sonangol aumentou a produção nacional"
+
+    position = text.rfind(" ")
+
+    print(position)
+    print(text[:position])
+    print(text[position:])
