@@ -39,17 +39,3 @@ def text_splitter(text, chunk_size, overlap) -> list[str]:
     if current_chunks:
                 chunks.append(current_chunks)
     return chunks  
-
-if __name__ == "__main__":
-    text = """Primeira linha.
-Segunda linha.
-Terceira linha.
-Quarta linha."""
-    #chunk_size = 10
-    #overlap = 3
-    chunks = text_splitter(text, 10, 3)
-    for i, chunk in enumerate(chunks):
-        print(f"\n--CHUNCK{i}--")
-        print(chunk)
-   # s = text_splitter(text, chunk_size, 3)
-    #print (s)

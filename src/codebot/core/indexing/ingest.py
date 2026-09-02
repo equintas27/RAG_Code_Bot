@@ -1,14 +1,27 @@
 
 from codebot.core.chunking.text_splitter import text_splitter, reconstruct_chunks
-from codebot.core.chunking.pdf_extractor import extract_pdf_with_metadata
+from codebot.core.chunking.pdf_extractor import extract_pdf_with_metadata, find_overlap
 
 if __name__ == "__main__":
     path = "data/documents/sonangol/Relatorio-2025.pdf"
     chunks = extract_pdf_with_metadata(path)
 
-    for i, chunk in enumerate (chunks):
-        print(f"--CHUNCK{i}--")
-        print(chunk)
+    for i in range(2, len(chunks) - 1):
+        current = chunks[i]
+        next_chunk = chunks[i + 1]
+
+    # Só compara chunks da mesma página
+        if current["metadata"]["page"] == next_chunk["metadata"]["page"]:
+            overlap_found = find_overlap(
+                current["content"],
+                next_chunk["content"]
+            )
+
+            print(
+                f"Chunk {current['metadata']['id']} → "
+                f"Chunk {next_chunk['metadata']['id']} | "
+                f"Overlap encontrado: {overlap_found}"
+            )
     #paragraphs = text_1.split("\n")
     #chunks = text_splitter(text_1, 1000, 200)
     #sizes = [len(chunk) for chunk in chunks]
