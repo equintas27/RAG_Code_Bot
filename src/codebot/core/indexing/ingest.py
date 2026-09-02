@@ -1,50 +1,36 @@
-import pymupdf
+
 from codebot.core.chunking.text_splitter import text_splitter, reconstruct_chunks
-
-def find_overlap(chunk1, chunk2):
-    max_overlap = min(len(chunk1), len(chunk2))
-
-    for size in range(max_overlap, 0, -1):
-        if chunk1[-size:] == chunk2[:size]:
-            return size
-
-    return 0
-
-def extract_pdf(pdf_path) ->str:    
-    document = pymupdf.open(pdf_path)
-
-    full_text = ""
-
-    for page in document:
-        text = page.get_text()
-        full_text += text
-    return (full_text)
-
+from codebot.core.chunking.pdf_extractor import extract_pdf_with_metadata
 
 if __name__ == "__main__":
     path = "data/documents/sonangol/Relatorio-2025.pdf"
-    text_1 = extract_pdf(path)
+    chunks = extract_pdf_with_metadata(path)
+
+    for i, chunk in enumerate (chunks):
+        print(f"--CHUNCK{i}--")
+        print(chunk)
     #paragraphs = text_1.split("\n")
-    chunks = text_splitter(text_1, 1000, 200)
+    #chunks = text_splitter(text_1, 1000, 200)
     #sizes = [len(chunk) for chunk in chunks]
 
    # print("Total de chunks:", len(chunks))
     #print("Menor chunk:", min(sizes))
     #print("Maior chunk:", max(sizes))
     #print("Média:", sum(sizes) / len(sizes))
-    small_overlaps = 0
-    for i in range(len(chunks) - 1):
-        overlap = find_overlap(chunks[i], chunks[i + 1])
+    #
+    #small_overlaps = 0
+    #for i in range(len(chunks) - 1):
+        #overlap = find_overlap(chunks[i], chunks[i + 1])
 
-        if overlap < 150:
-            print(f"\nChunk {i} -> {i + 1}: overlap = {overlap}")
-            print("FINAL DO CHUNK ANTERIOR:")
-            print(repr(chunks[i][-250:]))
-            print("INÍCIO DO PRÓXIMO CHUNK:")
-            print(repr(chunks[i + 1][:250]))
-            small_overlaps += 1
+        #if overlap < 150:
+            #print(f"\nChunk {i} -> {i + 1}: overlap = {overlap}")
+            #print("FINAL DO CHUNK ANTERIOR:")
+            #print(repr(chunks[i][-250:]))
+            #print("INÍCIO DO PRÓXIMO CHUNK:")
+           # print(repr(chunks[i + 1][:250]))
+            #small_overlaps += 1
 
-    print("Overlaps menores que 150:", small_overlaps)
+    #print("Overlaps menores que 150:", small_overlaps)
 
     #overlaps = []
 
@@ -97,7 +83,7 @@ if __name__ == "__main__":
     #for i, chunk in enumerate(chunks):
     #    print(f"Chunk {i}: {len(chunk)} caracteres")
     #    print(repr(chunk))
-    reconstructed = reconstruct_chunks(chunks)
+    #reconstructed = reconstruct_chunks(chunks)
 
     #print("\n--- ORIGINAL ---")
     #print(repr(text_1))
@@ -106,7 +92,7 @@ if __name__ == "__main__":
     #print(repr(reconstructed))
 
     #print("\n--- RESULTADO ---")
-    print(text_1 == reconstructed)
+    #print(text_1 == reconstructed)
     #print (f"Total de chunks {len(chunks)}")
     #for i, chunk in enumerate(chunks):
      #   print(f"Chunk {i}: {len(chunk)} caracteres")
