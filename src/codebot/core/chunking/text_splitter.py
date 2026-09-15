@@ -1,21 +1,3 @@
-def reconstruct_chunks(chunks):
-    if not chunks:
-        return ""
-
-    reconstructed = chunks[0]
-
-    for chunk in chunks[1:]:
-        overlap_found = 0
-
-        for i in range(min(len(reconstructed), len(chunk)), 0, -1):
-            if reconstructed.endswith(chunk[:i]):
-                overlap_found = i
-                break
-
-        reconstructed += chunk[overlap_found:]
-
-    return reconstructed
-
 def text_splitter(text, chunk_size, overlap) -> list[str]:
     
     chunks = []
@@ -35,7 +17,6 @@ def text_splitter(text, chunk_size, overlap) -> list[str]:
                 if overlap_start != -1:
                     current_chunks = current_chunks[overlap_start + 1:]
         current_chunks += line
-        
     if current_chunks:
                 chunks.append(current_chunks)
     return chunks  

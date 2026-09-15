@@ -1,14 +1,5 @@
 import pymupdf
-from codebot.core.chunking.text_splitter import text_splitter, reconstruct_chunks
-
-def find_overlap(chunk1, chunk2):
-    max_overlap = min(len(chunk1), len(chunk2))
-
-    for size in range(max_overlap, 0, -1):
-        if chunk1[-size:] == chunk2[:size]:
-            return size
-
-    return 0
+from codebot.core.chunking.text_splitter import text_splitter
 
 def extract_pdf_with_metadata(pdf_path: str, chunk_size: int = 1000, overlap: int = 200) ->list[dict]:    
     
