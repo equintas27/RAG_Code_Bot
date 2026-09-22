@@ -25,7 +25,7 @@ def reconstruct_chunks(chunks):
 
     return (reconstructed)
 
-def aux:
+def aux(ls):
     for i in range(2, len(chunks) - 1):
         current = chunks[i]
         next_chunk = chunks[i + 1]
