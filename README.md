@@ -242,3 +242,76 @@ tests/
 ```
 
 ---
+
+### Embeddings
+
+Embeddings são representações numéricas, geralmente organizadas em vetores, de informações como textos, imagens ou outros tipos de dados. Essas representações permitem que sistemas de Inteligência Artificial comparem informações com base em características semânticas, sendo utilizadas em aplicações como busca semântica, sistemas de recomendação, chatbots e recuperação de informações.
+
+#### Por que o RAG precisa de embeddings?
+
+Em um sistema RAG, os embeddings permitem representar os conteúdos dos documentos em um espaço vetorial. Isso possibilita realizar cálculos de similaridade entre diferentes conteúdos e, posteriormente, recuperar informações semanticamente relevantes para serem utilizadas como contexto pelo modelo de IA.
+
+#### Modelo utilizado
+
+Para este projeto, foi escolhido o modelo:
+
+`intfloat/multilingual-e5-base`
+
+A escolha foi baseada nas necessidades do projeto, principalmente pelo suporte multilíngue e pela capacidade de gerar embeddings com **768 dimensões**. Como o corpus utilizado contém informações em português, o suporte multilíngue é importante para a representação semântica dos conteúdos.
+
+#### Implementação
+
+A implementação foi dividida em responsabilidades distintas.
+
+Primeiro, foi criada uma classe responsável por inicializar e manter o modelo de embeddings. Dessa forma, o modelo é carregado uma vez e pode ser utilizado para processar vários chunks.
+
+Em seguida, foi criada uma função responsável por gerar o embedding de um chunk. Como cada chunk possui diferentes informações, o processo utiliza apenas o conteúdo textual do chunk para gerar sua representação vetorial.
+
+Para realizar essa transformação, foi utilizado o método `encode_document()`, disponibilizado pela biblioteca `sentence-transformers`, através do modelo `SentenceTransformer`.
+
+O processo pode ser representado da seguinte forma:
+
+```text
+Chunk
+  │
+  ├── content ────────► encode_document()
+  │                           │
+  │                           ▼
+  │                    Embedding
+  │                           │
+  │                           ▼
+  │                 vetor de 768 dimensões
+  │
+  └── metadata ─────────► preservado
+```
+
+Depois da geração do embedding, o vetor foi integrado ao próprio chunk. Dessa forma, cada chunk mantém o seu conteúdo, os seus metadados e o embedding correspondente.
+
+A estrutura resultante é aproximadamente:
+
+```text
+Chunk
+├── content
+├── metadata
+│   ├── source
+│   └── page
+└── embedding
+    └── 768 dimensões
+```
+
+#### Validação
+
+Após a implementação, foram processados **885 chunks**, correspondentes aos IDs de `0` a `884`.
+
+A validação confirmou que os chunks processados receberam embeddings e que cada embedding possui **768 elementos**, conforme a dimensão produzida pelo modelo `intfloat/multilingual-e5-base`.
+
+```text
+Chunk 0   → 768 dimensões
+Chunk 1   → 768 dimensões
+Chunk 2   → 768 dimensões
+...
+Chunk 883 → 768 dimensões
+Chunk 884 → 768 dimensões
+```
+
+Com isso, cada conteúdo do documento possui agora uma representação vetorial que poderá ser utilizada nas próximas etapas do sistema RAG.
