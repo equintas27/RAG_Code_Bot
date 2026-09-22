@@ -35,7 +35,7 @@ O documento utilizado para validação é o **Relatório Anual e Contas 2025 da 
 
 Data Ingestion é o processo de entrada e preparação dos documentos para o sistema.
 
-Nesta etapa, o documento Pdf é lido e o seu contéudo textual é extraído.
+Nesta etapa, o documento Pdf é lido e o seu conteúdo textual é extraído.
 
 Além do texto, são preservadas informações importantes sobre a origem do conteúdo, como:
 
@@ -89,8 +89,6 @@ Essa informação será útil posteriormente para identificar a fonte dos conte�
 Depois da extração, o texto é dividido em partes menores chamadas **chunks**.
 
 O objectivo é evitar trabalhar com um documento inteiro como uma única unidade de informação.
-
-O processo é:
 
 O processo é:
 

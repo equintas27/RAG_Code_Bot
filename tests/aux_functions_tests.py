@@ -24,3 +24,20 @@ def reconstruct_chunks(chunks):
         reconstructed += chunk[overlap_found:]
 
     return (reconstructed)
+
+def aux:
+    for i in range(2, len(chunks) - 1):
+        current = chunks[i]
+        next_chunk = chunks[i + 1]
+
+        if current["metadata"]["page"] == next_chunk["metadata"]["page"]:
+            overlap_found = find_overlap(
+                current["content"],
+                next_chunk["content"]
+            )
+
+            print(
+                f"Chunk {current['metadata']['id']} → "
+                f"Chunk {next_chunk['metadata']['id']} | "
+                f"Overlap encontrado: {overlap_found}"
+            )
