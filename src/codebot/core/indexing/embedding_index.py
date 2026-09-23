@@ -5,7 +5,9 @@ class EmbeddingIndex:
         self._embeddings = []
         self._chunk_ids = []
 
-    def add(embedding: list[numpy.ndarray], ):
+    def add(self, embedding: numpy.ndarray, chunk_id: int):
+        self._embeddings.append(embedding)
+        self._chunk_ids.append(chunk_id)
 
-    def search():
+    def search(self, embedding: numpy.ndarray):
 
