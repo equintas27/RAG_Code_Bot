@@ -315,3 +315,124 @@ Chunk 884 → 768 dimensões
 ```
 
 Com isso, cada conteúdo do documento possui agora uma representação vetorial que poderá ser utilizada nas próximas etapas do sistema RAG.
+
+
+### Indexação
+
+De forma simples, **indexar** significa organizar dados e criar uma estrutura que facilite a sua localização e recuperação posteriormente.
+
+#### Indexação vetorial
+
+A **indexação vetorial** é o processo de organizar vetores, como embeddings, utilizando uma estrutura de dados adequada para tornar mais eficiente a busca por vetores semelhantes.
+
+É importante distinguir alguns conceitos:
+
+* **Embedding** → é a representação vetorial de um determinado conteúdo.
+* **Indexação vetorial** → é o processo de organizar esses vetores para facilitar a busca.
+* **Índice vetorial** → é a estrutura resultante utilizada para organizar e consultar os vetores.
+* **Busca por similaridade** → é a operação que compara um vetor de consulta com os vetores armazenados para encontrar os mais semelhantes.
+
+Portanto, **indexação vetorial não é o vetor em si nem é a busca**. É o processo que prepara e organiza os vetores para que a busca por similaridade possa ser realizada de forma eficiente.
+
+### Armazenamento dos embeddings
+
+Em uma aplicação RAG, os embeddings podem ser armazenados em um **banco de dados vetorial**, como o Chroma.
+
+Além do próprio embedding, é necessário manter informações que permitam relacioná-lo ao conteúdo original. No nosso projeto, cada embedding está associado ao **ID do chunk** que originou esse embedding.
+
+O fluxo pode ser representado da seguinte forma:
+
+```text
+Chunk
+  ↓
+Embedding
+  ↓
+Embedding + Chunk ID
+  ↓
+Índice vetorial
+  ↓
+Busca por similaridade
+```
+
+### Estrutura criada no projeto
+
+Para compreender a lógica da indexação vetorial antes de utilizar uma solução especializada, foi criada uma classe `EmbeddingIndex`.
+
+Essa classe representa uma estrutura responsável por manter os embeddings e os IDs dos chunks correspondentes.
+
+Estrutura simplificada:
+
+```text
+EmbeddingIndex
+│
+├── _embeddings
+│      ├── embedding 0
+│      ├── embedding 1
+│      ├── embedding 2
+│      └── ...
+│
+└── _chunk_ids
+       ├── chunk ID 0
+       ├── chunk ID 1
+       ├── chunk ID 2
+       └── ...
+```
+
+Existe uma correspondência entre as duas listas:
+
+```text
+_embeddings[0] ↔ _chunk_ids[0]
+_embeddings[1] ↔ _chunk_ids[1]
+_embeddings[2] ↔ _chunk_ids[2]
+```
+
+Dessa forma, quando um embedding é identificado durante a busca, podemos saber a qual chunk ele pertence através do seu ID correspondente.
+
+### Métodos
+
+A classe possui dois métodos principais:
+
+#### `add`
+
+Responsável por adicionar um novo embedding juntamente com o ID do chunk correspondente.
+
+```text
+embedding + chunk_id
+        ↓
+     add()
+        ↓
+armazenamento no índice
+```
+
+#### `search`
+
+Responsável por realizar a busca entre o embedding da consulta e os embeddings armazenados.
+
+O objetivo é:
+
+```text
+Query
+  ↓
+Query Embedding
+  ↓
+search()
+  ↓
+comparação com embeddings armazenados
+  ↓
+métrica de similaridade/distância
+  ↓
+chunks mais semelhantes
+```
+
+A implementação da comparação entre os vetores será desenvolvida posteriormente.
+
+### Próximo passo
+
+O próximo conceito a estudar é a **comparação entre vetores**, começando pela **similaridade de cosseno** e posteriormente analisando outras métricas, como:
+
+* Distância Euclidiana;
+* Produto escalar (Dot Product);
+* Similaridade de Cosseno.
+
+O objetivo é compreender matematicamente como determinar se dois embeddings são semelhantes antes de implementar essa lógica no método `search()`.
+
