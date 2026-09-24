@@ -9,5 +9,5 @@ class EmbeddingIndex:
         self._embeddings.append(embedding)
         self._chunk_ids.append(chunk_id)
 
-    def search(self, embedding: numpy.ndarray):
-
+    #def search(self, embedding: numpy.ndarray):
+        
