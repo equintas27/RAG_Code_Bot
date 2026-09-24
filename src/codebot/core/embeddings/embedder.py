@@ -5,9 +5,7 @@ def generate_chunk_embedding(chunk: str, embedding_model: EmbeddingModel) ->  li
     vetor = embedding_model.model.encode_document(chunk)
     return (vetor)
 
-def adding_embedding(chunks: list[dict]) -> list[dict]:
-    
-    embedding_model = EmbeddingModel ()
+def adding_embedding(chunks: list[dict], embedding_model: EmbeddingModel) -> list[dict]:
     
     for chunk in chunks:
         #print(f"ID da chunk: {chunk["metadata"]["id"]}")
