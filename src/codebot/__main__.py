@@ -22,5 +22,6 @@ if __name__ == "__main__":
     print(f"Tamanho da quantidade de ids: {len(index._chunk_ids)}")
 
     emb = generate_query_embedding("O que é a Sonangol", embedding_model)
-    print (f"{len(emb)}")
-    print (f"{emb}")
+    result = index.search(emb)
+    for item in result:
+        print(f"ID: {item['chunk_id']} | Score: {item ['score']}")
