@@ -10,12 +10,11 @@ class EmbeddingIndex:
         self._embeddings.append(embedding)
         self._chunk_ids.append(chunk_id)
 
-    def search(self, query_embedding: numpy.ndarray) -> list[dict]:
+    def search(self, query_embedding: numpy.ndarray, K: int) -> list[dict]:
         result = []
         for emb, id in zip(self._embeddings, self._chunk_ids):
             s_score = calculate_similarity(emb, query_embedding)
             result.append({"chunk_id": id, "score": s_score})
-        return (result)
-
-
+        result.sort(key=lambda item: item["score"], reverse=True)
+        return (result[:K])
 
