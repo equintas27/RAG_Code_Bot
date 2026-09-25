@@ -6,7 +6,7 @@ from codebot.core.embeddings.query_embeddings import generate_query_embedding
 from codebot.core.embeddings.embeddingmodel import EmbeddingModel
 from codebot.core.indexing.embedding_index import EmbeddingIndex
 from codebot.core.retrieval.bring_info import bring_all_content
-
+from codebot.core.context.assemble_context import build_context
 
 if __name__ == "__main__":
     path = "data/documents/sonangol/Relatorio-2025.pdf"
@@ -28,6 +28,6 @@ if __name__ == "__main__":
     for item in result:
         all_ids.append(item["chunk_id"])
     all_content = bring_all_content(new_chunks, all_ids)
-    print (all_content)
-    for content in all_content:
-        print (f"{content}")
+    context = build_context(all_content)
+    print (context)
+
