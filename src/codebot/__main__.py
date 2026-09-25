@@ -7,10 +7,12 @@ from codebot.core.embeddings.embeddingmodel import EmbeddingModel
 from codebot.core.indexing.embedding_index import EmbeddingIndex
 from codebot.core.retrieval.bring_info import bring_all_content
 from codebot.core.context.assemble_context import build_context
+from codebot.core.prompt.assemble_prompt import build_prompt
 
 if __name__ == "__main__":
     path = "data/documents/sonangol/Relatorio-2025.pdf"
     chunks = extract_pdf_with_metadata(path)
+    
 
     embedding_model = EmbeddingModel ()
 
@@ -22,12 +24,13 @@ if __name__ == "__main__":
     print(f"Tamanho da quantidade de embeddings: {len(index._embeddings)}")
     print(f"Tamanho da quantidade de ids: {len(index._chunk_ids)}")
 
-    emb = generate_query_embedding("O que é a Sonangol?", embedding_model)
+    question = "O que é a Sonangol?"
+    emb = generate_query_embedding(question, embedding_model)
     result = index.search(emb, 5)
     all_ids = []
     for item in result:
         all_ids.append(item["chunk_id"])
     all_content = bring_all_content(new_chunks, all_ids)
     context = build_context(all_content)
-    print (context)
-
+    prompt = build_prompt(question, context)
+    print (prompt)
