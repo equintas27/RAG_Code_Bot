@@ -5,6 +5,7 @@ from codebot.core.embeddings.embedder import generate_chunk_embedding, adding_em
 from codebot.core.embeddings.query_embeddings import generate_query_embedding
 from codebot.core.embeddings.embeddingmodel import EmbeddingModel
 from codebot.core.indexing.embedding_index import EmbeddingIndex
+from codebot.core.retrieval.bring_info import bring_all_content
 
 
 if __name__ == "__main__":
@@ -21,7 +22,12 @@ if __name__ == "__main__":
     print(f"Tamanho da quantidade de embeddings: {len(index._embeddings)}")
     print(f"Tamanho da quantidade de ids: {len(index._chunk_ids)}")
 
-    emb = generate_query_embedding("O que é a Sonangol", embedding_model)
+    emb = generate_query_embedding("O que é a Sonangol?", embedding_model)
     result = index.search(emb, 5)
+    all_ids = []
     for item in result:
-        print(f"ID: {item['chunk_id']} | Score: {item ['score']}")
+        all_ids.append(item["chunk_id"])
+    all_content = bring_all_content(new_chunks, all_ids)
+    print (all_content)
+    for content in all_content:
+        print (f"{content}")
