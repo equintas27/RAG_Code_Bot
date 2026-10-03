@@ -8,8 +8,6 @@ def generate_chunk_embedding(chunk: str, embedding_model: EmbeddingModel) ->  li
 def adding_embedding(chunks: list[dict], embedding_model: EmbeddingModel) -> list[dict]:
     
     for chunk in chunks:
-        #print(f"ID da chunk: {chunk["metadata"]["id"]}")
         emb = generate_chunk_embedding(chunk["content"], embedding_model)
         chunk["embedding"] = emb
-        #print(f"Tamanho do embedding {len(chunk["embedding"])}")
-    return (chunks)
+        return (chunks)

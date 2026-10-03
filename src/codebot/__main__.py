@@ -8,12 +8,12 @@ from codebot.core.indexing.embedding_index import EmbeddingIndex
 from codebot.core.retrieval.bring_info import bring_all_content
 from codebot.core.context.assemble_context import build_context
 from codebot.core.prompt.assemble_prompt import build_prompt
+from codebot.core.generation.generate_response import generate_response
 
 if __name__ == "__main__":
     path = "data/documents/sonangol/Relatorio-2025.pdf"
     chunks = extract_pdf_with_metadata(path)
     
-
     embedding_model = EmbeddingModel ()
 
     new_chunks = adding_embedding(chunks, embedding_model)
@@ -33,4 +33,5 @@ if __name__ == "__main__":
     all_content = bring_all_content(new_chunks, all_ids)
     context = build_context(all_content)
     prompt = build_prompt(question, context)
-    print (prompt)
+    response = generate_response(prompt)
+    print (response)
